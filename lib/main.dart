@@ -1,17 +1,21 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:widget_learn/Animation/Animation01.dart';
-import 'package:widget_learn/Animation/Animation02.dart';
-import 'package:widget_learn/Animation/AnimationList.dart';
+import 'package:widget_learn/Animation/animation_router.dart';
+import 'package:widget_learn/routers/fluro_navigator.dart';
+import 'package:widget_learn/routers/not_found_page.dart';
+import 'routers/routers.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  MyApp({Key? key}) : super(key: key) {
+    Routes.initRoutes();
+  }
+
+  static GlobalKey<NavigatorState> navigatorKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +25,12 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(),
-      routes: <String, WidgetBuilder>{
-        "/animation": (context) => AnimationListWidget(),
-        "/animation01": (context) => Animation01(title: "两行代码就能动起来"),
-        "/animation02": (context) => Animation02(title: "在不同控件之间切换的过渡动画")
+      onGenerateRoute: Routes.router.generator,
+      navigatorKey: navigatorKey,
+      onUnknownRoute: (_) {
+        return MaterialPageRoute<void>(
+          builder: (BuildContext context) => const NotFoundPage(),
+        );
       },
     );
   }
@@ -39,7 +45,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<String> menuItems = ["动画", "布局", "异步"];
-  List<String> routers = ["/animation", "/layout", "/async"];
+  List<String> routers = [AnimationRouter.animationList, "/layout", "/async"];
 
   @override
   void initState() {
@@ -64,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
               final text = menuItems[index];
               return ListTile(
                   title: Text(text),
-                  onTap: () => {Navigator.pushNamed(context, routers[index])});
+                  onTap: () => NavigatorUtils.push(context, routers[index]));
             },
             separatorBuilder: (context, index) {
               return const Divider(height: 1);
